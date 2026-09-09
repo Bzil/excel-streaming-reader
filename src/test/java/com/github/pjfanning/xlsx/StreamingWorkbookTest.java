@@ -302,6 +302,22 @@ public class StreamingWorkbookTest {
   }
 
   @Test
+  public void testInvalidCellReferenceThrowsParseException() throws Exception {
+    // a cell whose "r" attribute has no row digits (e.g. r="B" instead of r="B1") makes
+    // org.apache.poi.ss.util.CellAddress throw a NumberFormatException; it must be
+    // translated into a ParseException instead of leaking as an unchecked exception.
+    try (Workbook workbook = openWorkbook("invalid_cell_reference.xlsx")) {
+      Sheet sheet = workbook.getSheetAt(0);
+      assertThrows(ParseException.class, () -> {
+        Iterator<Row> rowIterator = sheet.rowIterator();
+        while (rowIterator.hasNext()) {
+          rowIterator.next();
+        }
+      });
+    }
+  }
+
+  @Test
   public void testMissingRattrs() throws Exception {
     try(Workbook workbook = openWorkbook("missing-r-attrs.xlsx")) {
       Sheet sheet = workbook.getSheetAt(0);

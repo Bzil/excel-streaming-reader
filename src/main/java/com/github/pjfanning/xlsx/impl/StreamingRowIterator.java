@@ -214,7 +214,12 @@ class StreamingRowIterator implements CloseableIterator<Row> {
         Attribute ref = startElement.getAttributeByName(QNAME_R);
 
         if (ref != null) {
-          CellAddress cellAddress = new CellAddress(ref.getValue());
+          CellAddress cellAddress;
+          try {
+            cellAddress = new CellAddress(ref.getValue());
+          } catch (NumberFormatException e) {
+            throw new ParseException("Invalid cell reference [" + ref.getValue() + "]", e);
+          }
           currentColNum = cellAddress.getColumn();
           if (currentRow != null && currentRow.getRowNum() == currentRowNum) {
             currentCell = new StreamingCell(sheet, currentColNum, currentRow, use1904Dates);
